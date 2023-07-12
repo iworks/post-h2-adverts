@@ -40,8 +40,8 @@ class iworks_post_h2_adverts_base {
 		 * static settings
 		 */
 		$this->dev  = ( defined( 'IWORKS_DEV_MODE' ) && IWORKS_DEV_MODE ) ? '' : '.min';
-		$this->base = dirname( dirname( __FILE__ ) );
-		$this->dir  = basename( dirname( $this->base ) );
+		$this->base = dirname( __FILE__ );
+		$this->dir  = basename( dirname( dirname( $this->base ) ) );
 	}
 
 	public function get_version( $file = null ) {

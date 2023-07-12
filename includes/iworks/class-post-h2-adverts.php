@@ -31,11 +31,17 @@ require_once( dirname( __FILE__ ) . '/class-post-h2-adverts-base.php' );
 class iworks_post_h2_adverts extends iworks_post_h2_adverts_base {
 
 	private $capability;
+	private $postypes;
 
 	public function __construct() {
 		parent::__construct();
 		$this->version    = 'PLUGIN_VERSION';
 		$this->capability = apply_filters( 'iworks_post_h2_adverts_capability', 'manage_options' );
+		/**
+		 * post types
+		 */
+		include_once $this->base . '/posttypes/class-post-h2-adverts-posttypes-advert.php';
+		$this->posttypes['advert'] = new iworks_post_h2_adverts_postypes_advert;
 		/**
 		 * admin init
 		 */
