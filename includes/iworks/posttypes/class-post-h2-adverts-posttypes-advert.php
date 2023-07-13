@@ -45,20 +45,31 @@ class iworks_post_h2_adverts_postypes_advert extends iworks_post_h2_adverts_post
 		 */
 		$this->fields = array(
 			'basic' => array(
-				'after_h2'     => array(
+				'after_h2'      => array(
 					'label' => __( 'After H2', 'iworks-h2-adverts' ),
 					'type'  => 'number',
 					'args'  => array(
 						'default' => 1,
 					),
 				),
-				'button_label' => array(
+				'button_label'  => array(
 					'label' => __( 'Button Label', 'iworks-h2-adverts' ),
 				),
-				'button_url'   => array(
+				'button_url'    => array(
 					'label' => __( 'Button URL', 'iworks-h2-adverts' ),
 				),
-				'position'     => array(
+				'button_target' => array(
+					'label' => __( 'Open in', 'iworks-h2-adverts' ),
+					'type'  => 'radio',
+					'args'  => array(
+						'options' => array(
+							'_blank' => __( 'New Tab', 'iworks-h2-adverts' ),
+							'same'   => __( 'Same Tab', 'iworks-h2-adverts' ),
+						),
+						'default' => '_blank',
+					),
+				),
+				'position'      => array(
 					'type'  => 'radio',
 					'label' => __( 'Position', 'iworks-h2-adverts' ),
 					'args'  => array(
@@ -282,13 +293,13 @@ class iworks_post_h2_adverts_postypes_advert extends iworks_post_h2_adverts_post
 		if ( empty( $button_url ) ) {
 			return $content;
 		}
-
-		$classes  = array(
+		$button_target = get_post_meta( $post_id, $this->options->get_option_name( 'basic_button_target' ), true );
+		$classes       = array(
 			'iworks-unit',
 			'iworks-unit-#POSITION#',
 		);
-		$content  = '<!-- Unit: #ID# -->';
-		$content .= '<div class="#CLASS#">';
+		$content       = '<!-- Unit: #ID# -->';
+		$content      .= '<div class="#CLASS#">';
 		if ( has_post_thumbnail( $post_id ) ) {
 			$classes[] = 'iworks-unit-thubmail';
 			$content  .= get_the_post_thumbnail( $post_id );
@@ -298,8 +309,9 @@ class iworks_post_h2_adverts_postypes_advert extends iworks_post_h2_adverts_post
 			get_the_title( $post_id )
 		);
 		$content .= sprintf(
-			'<a class="button iworks-unit-button" href="%s">%s</a>',
+			'<a class="button iworks-unit-button" href="%s"%s>%s</a>',
 			esc_url( $button_url ),
+			'_blank' === $button_target ? ' target="_blank"' : '',
 			esc_html( $button_label )
 		);
 		$content .= '</div>';
