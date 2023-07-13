@@ -86,7 +86,7 @@ class iworks_post_h2_adverts_posttypes {
 			/**
 			 * build
 			 */
-			$content .= sprintf( '<div class="iworks-5o5-row iworks-5o5-row-%s">', esc_attr( $key ) );
+			$content .= sprintf( '<div class="iworks-row iworks-row-%s">', esc_attr( $key ) );
 			if ( isset( $data['label'] ) && ! empty( $data['label'] ) ) {
 				$content .= sprintf( '<label for=%s">%s</label>', esc_attr( $args['id'] ), esc_html( $data['label'] ) );
 			}
