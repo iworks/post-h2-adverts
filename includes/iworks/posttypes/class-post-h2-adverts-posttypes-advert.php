@@ -317,16 +317,19 @@ class iworks_post_h2_adverts_postypes_advert extends iworks_post_h2_adverts_post
 			$content  .= get_the_post_thumbnail( $post_id );
 		}
 		$content .= '<div class="iworks-unit-content">';
-		$content .= sprintf(
-			'<p class="iworks-unit-title">%s</p>',
-			get_the_title( $post_id )
-		);
+		// $content .= sprintf(
+			// '<p class="iworks-unit-title">%s</p>',
+			// get_the_title( $post_id )
+		// );
+		$content .= get_the_content( null, false, $post_id );
+		$content .= '<div class="iworks-unit-content-buttons">';
 		$content .= sprintf(
 			'<a class="button iworks-unit-button" href="%s"%s>%s</a>',
 			esc_url( $button_url ),
 			'_blank' === $button_target ? ' target="_blank"' : '',
 			esc_html( $button_label )
 		);
+		$content .= '</div>';
 		$content .= '</div>';
 		$content .= '</div>';
 		$content .= '<!-- /Unit: #ID# -->';
