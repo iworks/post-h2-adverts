@@ -293,17 +293,30 @@ class iworks_post_h2_adverts_postypes_advert extends iworks_post_h2_adverts_post
 		if ( empty( $button_url ) ) {
 			return $content;
 		}
-		$button_target = get_post_meta( $post_id, $this->options->get_option_name( 'basic_button_target' ), true );
-		$classes       = array(
+		/**
+		 * classes
+		 */
+		$classes = array(
 			'iworks-unit',
 			'iworks-unit-#POSITION#',
 		);
-		$content       = '<!-- Unit: #ID# -->';
-		$content      .= '<div class="#CLASS#">';
+		/**
+		 * target
+		 */
+		$button_target = get_post_meta( $post_id, $this->options->get_option_name( 'basic_button_target' ), true );
+		if ( '_blank' === $button_target ) {
+			$classes[] = 'iworks-unit-target_blank';
+		}
+		/**
+		 * content
+		 */
+		$content  = '<!-- Unit: #ID# -->';
+		$content .= '<div class="#CLASS#">';
 		if ( has_post_thumbnail( $post_id ) ) {
-			$classes[] = 'iworks-unit-thubmail';
+			$classes[] = 'iworks-unit-thumbnail';
 			$content  .= get_the_post_thumbnail( $post_id );
 		}
+		$content .= '<div class="iworks-unit-content">';
 		$content .= sprintf(
 			'<p class="iworks-unit-title">%s</p>',
 			get_the_title( $post_id )
@@ -315,18 +328,29 @@ class iworks_post_h2_adverts_postypes_advert extends iworks_post_h2_adverts_post
 			esc_html( $button_label )
 		);
 		$content .= '</div>';
+		$content .= '</div>';
 		$content .= '<!-- /Unit: #ID# -->';
-		$content  = preg_replace(
+		/**
+		 * replace CLASS
+		 */
+		$class   = esc_attr( implode( ' ', $classes ) );
+		$content = preg_replace( '/#CLASS#/', $class, $content );
+		/**
+		 * replace: ID
+		 */
+		$content = preg_replace(
 			'/#ID#/',
 			$post_id,
 			$content
 		);
-		$content  = preg_replace( '/#POSITION#/', get_post_meta( $post_id, $this->options->get_option_name( 'basic_position' ), true ), $content );
-
-		return sprintf(
-			$content,
-			$post_id,
-		);
+		/**
+		 * replace: POSITION
+		 */
+		$content = preg_replace( '/#POSITION#/', get_post_meta( $post_id, $this->options->get_option_name( 'basic_position' ), true ), $content );
+		/**
+		 * return
+		 */
+		return $content;
 	}
 }
 
