@@ -22,11 +22,11 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-if ( class_exists( 'iworks_post_h2_adverts_postypes' ) ) {
+if ( class_exists( 'iworks_post_h2_adverts_posttypes' ) ) {
 	return;
 }
 
-class iworks_post_h2_adverts_postypes {
+class iworks_post_h2_adverts_posttypes {
 	protected $post_type_name;
 	protected $options;
 	protected $fields;

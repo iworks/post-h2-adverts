@@ -24,16 +24,11 @@ module.exports = function(grunt) {
 
         // Concatenate those JS files into a single file (target: [source, source, ...]).
         js_files_concat: {
-            'assets/scripts/admin/admin.js': [
-                'assets/scripts/admin/src/datepicker.js',
-                'assets/scripts/admin/src/select2.js'
-            ]
         },
 
         // SASS files to process. Resulting CSS files will be minified as well.
         css_files_compile: {},
         css_files_concat: {
-            'assets/styles/admin.css': ['assets/styles/admin/*.css']
         },
 
         plugin_dir: '',

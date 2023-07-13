@@ -40,8 +40,10 @@ class iworks_post_h2_adverts extends iworks_post_h2_adverts_base {
 		/**
 		 * post types
 		 */
-		include_once $this->base . '/posttypes/class-post-h2-adverts-posttypes-advert.php';
-		$this->posttypes['advert'] = new iworks_post_h2_adverts_postypes_advert;
+		foreach ( array( 'advert', 'post' ) as $post_type_name ) {
+			include_once $this->base . '/posttypes/class-post-h2-adverts-posttypes-' . $post_type_name . '.php';
+			$this->posttypes[ $post_type_name ] = new ( 'iworks_post_h2_adverts_posttypes_' . $post_type_name );
+		}
 		/**
 		 * admin init
 		 */

@@ -22,13 +22,13 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-if ( class_exists( 'iworks_post_h2_adverts_postypes_advert' ) ) {
+if ( class_exists( 'iworks_post_h2_adverts_posttypes_advert' ) ) {
 	return;
 }
 
 require_once( dirname( dirname( __FILE__ ) ) . '/class-post-h2-adverts-posttypes.php' );
 
-class iworks_post_h2_adverts_postypes_advert extends iworks_post_h2_adverts_postypes {
+class iworks_post_h2_adverts_posttypes_advert extends iworks_post_h2_adverts_posttypes {
 
 	protected $post_type_name = 'iworks_h2_advert';
 
@@ -195,54 +195,8 @@ class iworks_post_h2_adverts_postypes_advert extends iworks_post_h2_adverts_post
 	}
 
 	/**
-	 * Add default sorting
 	 *
 	 * @since 1.0.0
-	 *
-	 * @param WP_Query $query WP Query object.
-	 */
-	public function apply_default_sort_order( $query ) {
-		/**
-		 * do not change if it is already set by request
-		 */
-		if ( isset( $_REQUEST['orderby'] ) ) {
-			return $query;
-		}
-		/**
-		 * only main query
-		 */
-		if ( ! $query->is_main_query() ) {
-			return $query;
-		}
-		/**
-		 * do not change outsite th admin area
-		 */
-		$post_type = get_query_var( 'post_type' );
-		if ( is_admin() ) {
-			/**
-			 * check get_current_screen()
-			 */
-			if ( function_exists( 'get_current_screen' ) ) {
-				$screen = get_current_screen();
-				if ( isset( $screen->post_type ) && $this->get_name() == $screen->post_type ) {
-					$query->set( 'order', 'ASC' );
-					$query->set( 'orderby', 'post_title' );
-				}
-			}
-		} else {
-			if ( ! empty( $post_type ) && $post_type === $this->post_type_name ) {
-				$query->set( 'order', 'ASC' );
-				$query->set( 'orderby', 'post_title' );
-				return $query;
-			}
-		}
-		return $query;
-	}
-
-
-	/**
-	 *
-	 * @since 1.0
 	 */
 	public function filter_the_content_add_h2_advert( $content ) {
 		if ( ! is_single() ) {
@@ -252,8 +206,7 @@ class iworks_post_h2_adverts_postypes_advert extends iworks_post_h2_adverts_post
 			return $content;
 		}
 		if ( preg_match_all( '@(<h2.+</h2>)@', $content, $matches ) ) {
-			$max = count( $matches[0] );
-
+			$max  = count( $matches[0] );
 			$args = array(
 				'post_type'        => $this->post_type_name,
 				'posts_per_page'   => 1,
@@ -311,7 +264,11 @@ class iworks_post_h2_adverts_postypes_advert extends iworks_post_h2_adverts_post
 		 * content
 		 */
 		$content  = '<!-- Unit: #ID# -->';
-		$content .= '<div class="#CLASS#">';
+		$content .= sprintf(
+			'<a class="#CLASS#" href="%s"%s>',
+			esc_url( $button_url ),
+			'_blank' === $button_target ? ' target="_blank"' : ''
+		);
 		if ( has_post_thumbnail( $post_id ) ) {
 			$classes[] = 'iworks-unit-thumbnail';
 			$content  .= get_the_post_thumbnail( $post_id );
@@ -324,14 +281,12 @@ class iworks_post_h2_adverts_postypes_advert extends iworks_post_h2_adverts_post
 		$content .= get_the_content( null, false, $post_id );
 		$content .= '<div class="iworks-unit-content-buttons">';
 		$content .= sprintf(
-			'<a class="button iworks-unit-button" href="%s"%s>%s</a>',
-			esc_url( $button_url ),
-			'_blank' === $button_target ? ' target="_blank"' : '',
+			'<span class="button iworks-unit-button">%s</span>',
 			esc_html( $button_label )
 		);
 		$content .= '</div>';
 		$content .= '</div>';
-		$content .= '</div>';
+		$content .= '</a>';
 		$content .= '<!-- /Unit: #ID# -->';
 		/**
 		 * replace CLASS
