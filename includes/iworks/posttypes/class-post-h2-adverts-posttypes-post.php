@@ -38,29 +38,43 @@ class iworks_post_h2_adverts_posttypes_post extends iworks_post_h2_adverts_postt
 		 * hooks
 		 */
 		add_action( 'add_meta_boxes', array( $this, 'register_meta_boxes' ) );
+		add_action( 'load-post-new.php', array( $this, 'prepare_admin_resouces' ) );
+		add_action( 'load-post.php', array( $this, 'prepare_admin_resouces' ) );
 		/**
 		 * fields
 		 */
 		$this->fields = array(
-			'basic' => array(
-			),
-        );
-        for ( $i = 1; $i < 10; $i++ ) {
-            $this->fields['basic'][sprintf( 'after_h2_%02d', $i ) ]       = array(
-                'type'  => 'radio',
-                'label' => sprintf(
-                    __( 'After H2 - %d', 'iworks-h2-posts' ),
-                    $i
-                ),
-                'args'  => array(
-                    'options' => array(
-                        'show'  => __( 'Show', 'iworks-h2-adverts' ),
-                        'hide' => __( 'Hide', 'iworks-h2-adverts' ),
-                    ),
-                    'default' => 'show',
-                ),
-            );
-        }
+			'basic' => array(),
+		);
+	}
+
+	public function action_admin_enqueue_scripts() {
+		global $iworks_post_h2_adverts_options;
+		wp_enqueue_style( $iworks_post_h2_adverts_options->get_option_name( 'admin-common' ) );
+	}
+
+	public function prepare_admin_resouces() {
+		add_action( 'admin_enqueue_scripts', array( $this, 'action_admin_enqueue_scripts' ) );
+		$list = apply_filters( 'iworks-h2-adverts/get/list/array', array() );
+		for ( $i = 1; $i < apply_filters( 'iworks-h2-adverts/get/max/number/h2', 0 ); $i++ ) {
+			$this->fields['basic'][ $this->get_after_h2_name( $i ) ] = array(
+				'type'  => 'select',
+				'label' => sprintf(
+					__( 'After H2 - %d', 'iworks-h2-posts' ),
+					$i
+				),
+				'args'  => array(
+					'options' => wp_parse_args(
+						$list,
+						array(
+							'auto' => __( 'Auto', 'iworks-h2-adverts' ),
+							'hide' => __( 'Hide', 'iworks-h2-adverts' ),
+						)
+					),
+					'default' => 'show',
+				),
+			);
+		}
 	}
 
 	public function register() {
@@ -74,7 +88,7 @@ class iworks_post_h2_adverts_posttypes_post extends iworks_post_h2_adverts_postt
 		add_meta_box( 'basic', __( 'H2 Adverts Configuration', 'iworks-h2-posts' ), array( $this, 'basic' ), $this->post_type_name );
 	}
 
-    public function basic( $post ) {
+	public function basic( $post ) {
 		$this->get_meta_box_content( $post, $this->fields, __FUNCTION__ );
 	}
 

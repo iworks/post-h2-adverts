@@ -32,6 +32,8 @@ class iworks_post_h2_adverts_posttypes_advert extends iworks_post_h2_adverts_pos
 
 	protected $post_type_name = 'iworks_h2_advert';
 
+	private $max_numer_of_h2 = 11;
+
 	public function __construct() {
 		parent::__construct();
 		/*
@@ -40,6 +42,11 @@ class iworks_post_h2_adverts_posttypes_advert extends iworks_post_h2_adverts_pos
 		add_action( 'wp_body_open', array( $this, 'action_wp_body_open_turn_on_replacement' ) );
 		add_filter( "manage_{$this->get_name()}_posts_columns", array( $this, 'add_columns' ) );
 		add_action( 'manage_posts_custom_column', array( $this, 'custom_columns' ), 10, 2 );
+		/**
+		 * oqn hooks
+		 */
+		add_filter( 'iworks-h2-adverts/get/list/array', array( $this, 'get_list_array' ) );
+		add_filter( 'iworks-h2-adverts/get/max/number/h2', array( $this, 'get_max_number_of_h2' ) );
 		/**
 		 * fields
 		 */
@@ -80,6 +87,28 @@ class iworks_post_h2_adverts_posttypes_advert extends iworks_post_h2_adverts_pos
 						'default' => 'left',
 					),
 				),
+				'rel'           => array(
+					'type' => 'description',
+					'args' => array(
+						'value' => __( 'Relation', 'iworks-h2-adverts' ),
+					),
+				),
+				'rel_nofollow'  => array(
+					'type' => 'checkbox',
+					'args' => array(
+						'after'   => __( 'Nofollow', 'iworks-h2-adverts' ) . '</label>',
+						'before'  => '<label>',
+						'default' => 1,
+					),
+				),
+				'rel_sponsored' => array(
+					'type' => 'checkbox',
+					'args' => array(
+						'after'   => __( 'Sponsored', 'iworks-h2-adverts' ) . '</label>',
+						'before'  => '<label>',
+						'default' => 1,
+					),
+				),
 			),
 		);
 		/**
@@ -115,7 +144,7 @@ class iworks_post_h2_adverts_posttypes_advert extends iworks_post_h2_adverts_pos
 			'update_item'           => __( 'Update H2 Advert', 'iworks-h2-adverts' ),
 			'view_item'             => __( 'View H2 Advert', 'iworks-h2-adverts' ),
 			'view_items'            => __( 'View H2 Adverts', 'iworks-h2-adverts' ),
-			'search_items'          => __( 'Search person', 'iworks-h2-adverts' ),
+			'search_items'          => __( 'Search advert', 'iworks-h2-adverts' ),
 			'not_found'             => __( 'Not found', 'iworks-h2-adverts' ),
 			'not_found_in_trash'    => __( 'Not found in Trash', 'iworks-h2-adverts' ),
 			'featured_image'        => __( 'Featured Image', 'iworks-h2-adverts' ),
@@ -144,7 +173,7 @@ class iworks_post_h2_adverts_posttypes_advert extends iworks_post_h2_adverts_pos
 			'publicly_queryable'   => false,
 			'register_meta_box_cb' => array( $this, 'register_meta_boxes' ),
 		);
-		$args         = apply_filters( 'iworks-h2-adverts_register_person_post_type_args', $args );
+		$args         = apply_filters( 'iworks-h2-adverts/register_post_type/advert/args', $args );
 		register_post_type( $this->post_type_name, $args );
 	}
 
@@ -166,7 +195,7 @@ class iworks_post_h2_adverts_posttypes_advert extends iworks_post_h2_adverts_pos
 	 * @since 1.0.0
 	 *
 	 * @param string $column Column name,
-	 * @param integer $post_id Current post id (person),
+	 * @param integer $post_id Current post id (advert),
 	 *
 	 */
 	public function custom_columns( $column, $post_id ) {
@@ -205,6 +234,7 @@ class iworks_post_h2_adverts_posttypes_advert extends iworks_post_h2_adverts_pos
 		if ( ! is_main_query() ) {
 			return $content;
 		}
+		$post_id = get_the_ID();
 		if ( preg_match_all( '@(<h2.+</h2>)@', $content, $matches ) ) {
 			$max  = count( $matches[0] );
 			$args = array(
@@ -221,15 +251,32 @@ class iworks_post_h2_adverts_posttypes_advert extends iworks_post_h2_adverts_pos
 				'suppress_filters' => true,
 			);
 			for ( $i = 1; $i <= $max; $i++ ) {
-				$args['meta_query']['after_h2']['value'] = $i;
-				$query                                   = new WP_Query( $args );
-				if ( $query->have_posts() ) {
-					$unit = $this->get_unit( $query->posts[0] );
-					if ( ! empty( $unit ) ) {
-						$h2      = $matches[1][ $i - 1 ];
-						$re      = sprintf( '@%s@', preg_replace( '/\?/', '\\?', $h2 ) );
-						$content = preg_replace( $re, $h2 . $unit, $content );
-					}
+				$unit       = null;
+				$meta_name  = $this->options->get_option_name( 'basic_' . $this->get_after_h2_name( $i ) );
+				$meta_value = get_post_meta( $post_id, $meta_name, true );
+				switch ( $meta_value ) {
+					case '':
+					case 'auto':
+						$args['meta_query']['after_h2']['value'] = $i;
+						$query                                   = new WP_Query( $args );
+						if ( $query->have_posts() ) {
+							$unit = $this->get_unit( $query->posts[0] );
+						}
+						break;
+					case 'hide':
+						break;
+					default:
+						if ( preg_match( '/^advert:(\d+)$/', $meta_value, $m ) ) {
+							$unit = $this->get_unit( $m[1] );
+						}
+				}
+				/**
+				 * unit
+				 */
+				if ( ! empty( $unit ) ) {
+					$h2      = $matches[1][ $i - 1 ];
+					$re      = sprintf( '@%s@', preg_replace( '/\?/', '\\?', $h2 ) );
+					$content = preg_replace( $re, $h2 . $unit, $content );
 				}
 			}
 		}
@@ -237,7 +284,13 @@ class iworks_post_h2_adverts_posttypes_advert extends iworks_post_h2_adverts_pos
 	}
 
 	private function get_unit( $post_id ) {
-		$content      = '';
+		$content = '';
+		/**
+		 * check post type
+		 */
+		if ( get_post_type( $post_id ) !== $this->post_type_name ) {
+			return $content;
+		}
 		$button_label = get_post_meta( $post_id, $this->options->get_option_name( 'basic_button_label' ), true );
 		if ( empty( $button_label ) ) {
 			return $content;
@@ -261,13 +314,25 @@ class iworks_post_h2_adverts_posttypes_advert extends iworks_post_h2_adverts_pos
 			$classes[] = 'iworks-unit-target_blank';
 		}
 		/**
+		 * reles
+		 */
+		$rels = array();
+		foreach ( $this->fields['basic'] as $key => $data ) {
+			if ( preg_match( '/^rel_(.+)$/', $key, $matches ) ) {
+				if ( get_post_meta( $post_id, $this->options->get_option_name( 'basic_' . $key ), true ) ) {
+					$rels[] = $matches[1];
+				}
+			}
+		}
+		/**
 		 * content
 		 */
 		$content  = '<!-- Unit: #ID# -->';
 		$content .= sprintf(
-			'<a class="#CLASS#" href="%s"%s>',
+			'<a class="#CLASS#" href="%s"%s%s>',
 			esc_url( $button_url ),
-			'_blank' === $button_target ? ' target="_blank"' : ''
+			'_blank' === $button_target ? ' target="_blank"' : '',
+			empty( $rels ) ? '' : sprintf( ' rel="%s"', implode( ' ', $rels ) )
 		);
 		if ( has_post_thumbnail( $post_id ) ) {
 			$classes[] = 'iworks-unit-thumbnail';
@@ -309,6 +374,25 @@ class iworks_post_h2_adverts_posttypes_advert extends iworks_post_h2_adverts_pos
 		 * return
 		 */
 		return $content;
+	}
+
+	public function get_list_array() {
+		$list     = array();
+		$args     = array(
+			'post_type'      => $this->post_type_name,
+			'posts_per_page' => -1,
+			'orderby'        => 'title',
+			'fields'         => 'ids',
+		);
+		$wp_query = new WP_Query( $args );
+		foreach ( $wp_query->posts as $post_id ) {
+			$list[ 'advert:' . $post_id ] = sprintf( '%s (%d)', get_the_title( $post_id ), $post_id );
+		}
+		return $list;
+	}
+
+	public function get_max_number_of_h2() {
+		return $this->max_numer_of_h2;
 	}
 }
 

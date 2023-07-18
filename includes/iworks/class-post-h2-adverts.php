@@ -42,12 +42,24 @@ class iworks_post_h2_adverts extends iworks_post_h2_adverts_base {
 		 */
 		foreach ( array( 'advert', 'post' ) as $post_type_name ) {
 			include_once $this->base . '/posttypes/class-post-h2-adverts-posttypes-' . $post_type_name . '.php';
-			$this->posttypes[ $post_type_name ] = new ( 'iworks_post_h2_adverts_posttypes_' . $post_type_name );
+			$class_name                         = sprintf( 'iworks_post_h2_adverts_posttypes_%s', $post_type_name );
+			$this->posttypes[ $post_type_name ] = new $class_name;
 		}
 		/**
 		 * admin init
 		 */
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'register_plugin_styles' ), 0 );
+	}
+
+	public function register_plugin_styles() {
+		global $iworks_post_h2_adverts_options;
+		wp_register_style(
+			$iworks_post_h2_adverts_options->get_option_name( 'admin-common' ),
+			plugins_url( $this->dir . '/assets/styles/admin/common.css' ),
+			array(),
+			$this->version
+		);
 	}
 
 	public function admin_init() {

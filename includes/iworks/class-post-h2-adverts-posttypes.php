@@ -178,6 +178,10 @@ class iworks_post_h2_adverts_posttypes {
 		$classes[] = 'iworks-type';
 		return $classes;
 	}
+
+	protected function get_after_h2_name( $i ) {
+		return sprintf( 'after_h2_%02d', $i );
+	}
 }
 
 

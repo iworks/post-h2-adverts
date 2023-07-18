@@ -27,8 +27,11 @@ module.exports = function(grunt) {
         },
 
         // SASS files to process. Resulting CSS files will be minified as well.
-        css_files_compile: {},
+        css_files_compile: {
+            'assets/styles/admin/common.css': 'assets/sass/admin/common.scss',
+        },
         css_files_concat: {
+            'assets/styles/admin.css': ['assets/styles/admin/*.css'],
         },
 
         plugin_dir: '',
@@ -409,7 +412,7 @@ module.exports = function(grunt) {
 
     // Default task.
 
-    grunt.registerTask('default', ['clean:temp', 'concat', 'uglify', 'sass', 'cssmin']);
+    grunt.registerTask('default', ['clean:temp', 'concat', 'uglify', 'css']);
     grunt.registerTask('js', ['concat', 'uglify']);
     grunt.registerTask('css', ['sass', 'cssmin']);
     grunt.registerTask('i18n', ['checktextdomain', 'makepot', 'potomo']);
